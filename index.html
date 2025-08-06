@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>🍍 PINNeAPPle References</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        .section-title {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .table th,
+        .table td {
+            vertical-align: middle;
+        }
+
+        /* Esconder seções que não estão ativas */
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#" onclick="showSection('home')">🍍 PINNeAPPle</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="#"
+                            onclick="showSection('papers'); return false;">Papers</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('repos'); return false;">Repositories</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <!-- Home (Página Inicial) -->
+        <section id="home" class="content-section active text-center">
+            <h1>Welcome to 🍍 PINNeAPPle</h1>
+            <p class="lead">Your Physics-Informed Neural Networks reference platform.</p>
+            <!-- Dashboard cards -->
+            <div class="row" id="dashboard-cards"></div>
+
+            
+        </section>
+        </div>
+        <!-- Papers Section -->
+        <section id="papers" class="content-section">
+            <h2 class="section-title">📄 ArXiv Papers</h2>
+            <div class="mb-3 row">
+                <div class="col-md-3">
+                    <input type="text" id="paperTitle" class="form-control" placeholder="Title" />
+                </div>
+                <div class="col-md-3">
+                    <input type="text" id="paperAuthor" class="form-control" placeholder="Author" />
+                </div>
+                <div class="col-md-3">
+                    <input type="text" id="paperTerm" class="form-control" placeholder="Term (Semantic Search)" />
+                </div>
+            </div>
+            <button onclick="loadPapers()" class="btn btn-primary mb-3">🔍 Search Papers</button>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Authors</th>
+                        <th>Publication Date</th>
+                        <th style="width: 240px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="papers-table"></tbody>
+            </table>
+        </section>
+
+        <!-- Repos Section -->
+        <section id="repos" class="content-section">
+            <h2 class="section-title">📦 GitHub Repositories</h2>
+            <div class="mb-3 row">
+                <div class="col-md-3"><input type="text" id="repoAuthor" class="form-control" placeholder="Author"></div>
+                <div class="col-md-3"><input type="text" id="repoName" class="form-control" placeholder="Repository Name"></div>
+                <div class="col-md-4"><input type="text" id="repoSemanticQuery" class="form-control" placeholder="Term (Semantic Search)..." /></div>
+                    
+            </div>
+            <button onclick="loadRepos()" class="btn btn-primary mb-3">🔍 Search Repos</button>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Author</th>
+                        <th style="width: 300px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="repos-table"></tbody>
+            </table>
+        </section>
+
+        <!-- Semantic Search -->
+        <section id="semantic" class="content-section">
+            <h2 class="section-title">🔍 Semantic Search</h2>
+            <div class="input-group mb-3">
+                <input type="text" id="semanticQuery" class="form-control"
+                    placeholder="Search for topics or concepts...">
+                <button class="btn btn-outline-primary" onclick="semanticSearch()">Search</button>
+            </div>
+            <div id="semantic-results"></div>
+        </section>
+    </div>
+    <div class="modal fade" id="paperDetailModal" tabindex="-1" aria-labelledby="paperDetailModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paperDetailModalLabel">Paper Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body" id="paper-detail-content">
+                    <!-- Conteúdo carregado via JS aqui -->
+                </div>
+                <div class="modal-footer">
+                    <a href="#" target="_blank" id="paper-detail-link" class="btn btn-primary">Access Full
+                        Paper</a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="repoDetailModal" tabindex="-1" aria-labelledby="repoDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="repoDetailModalLabel">Repository Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body" id="repo-detail-content">
+                <!-- Detalhes carregados via JS -->
+            </div>
+            <div class="modal-footer">
+                <a href="#" target="_blank" id="repo-detail-link" class="btn btn-primary">Check Repo</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+    </div>
+    
+    <footer class="mt-5 py-4 bg-light text-center text-muted">
+<div class="container">
+      <p class="mb-0">Powered by Enterprise Learning Machines - 2025</p>
+    </div>
+  </footer>
+    <script>
+    const API = "http://localhost:8000";
+
+    function showSection(sectionId) {
+        const sections = document.querySelectorAll('.content-section');
+        sections.forEach(sec => {
+            sec.classList.toggle('active', sec.id === sectionId);
+        });
+
+        // Apenas chama a função necessária ao trocar de seção
+        if (sectionId === 'papers') {
+            loadPapers();
+        }
+        if (sectionId === 'repos') {
+            loadRepos();
+        }
+        if (sectionId === 'semantic') {
+            document.getElementById('semantic-results').innerHTML = '';
+        }
+        if (sectionId === 'home') {
+            loadDashboard();  // recarrega dashboard se usuário clicar em "Home"
+        }
+    }
+
+    // Executar ao carregar a página
+    document.addEventListener("DOMContentLoaded", () => {
+        loadDashboard(); // carrega dashboard assim que a página abrir
+
+        // Adiciona event listener apenas depois que o DOM estiver carregado
+        const tabHome = document.getElementById("tab-home");
+        if (tabHome) {
+            tabHome.addEventListener("click", () => {
+                showSection("home");
+            });
+        }
+    });
+
+
+        async function loadDashboard() {
+            try {
+                const res = await fetch(`${API}/dashboard`);
+                if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
+
+                const data = await res.json();
+
+                const papersByAreaHtml = Array.isArray(data.papers_by_area) && data.papers_by_area.length > 0
+                    ? data.papers_by_area.map(area => `<div>${area.area}: <strong>${area.total}</strong></div>`).join('')
+                    : '<div>No papers by area data</div>';
+
+                const topPaperAuthorsHtml = Array.isArray(data.top_paper_authors) && data.top_paper_authors.length > 0
+                    ? data.top_paper_authors.map(a => `<div>${a.author} (${a.total})</div>`).join('')
+                    : '<div>No paper authors found</div>';
+
+                const topRepoAuthorsHtml = Array.isArray(data.top_repo_authors) && data.top_repo_authors.length > 0
+                    ? data.top_repo_authors.map(a => `<div>${a.author} (${a.total})</div>`).join('')
+                    : '<div>No repo authors found</div>';
+
+                const html = `
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 text-center p-4">
+                <h6 class="text-muted">Total Papers</h6>
+                <h2 class="fw-bold text-primary">${data.total_papers ?? 0}</h2>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 text-center p-4">
+                <h6 class="text-muted">Total Repositories</h6>
+                <h2 class="fw-bold text-success">${data.total_repos ?? 0}</h2>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 p-4">
+                <h6 class="text-muted mb-3 text-center">Top Paper Authors</h6>
+                <canvas id="topPaperAuthorsChart" height="150"></canvas>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 p-4">
+                <h6 class="text-muted mb-3 text-center">Top Repository Developers</h6>
+                <canvas id="topRepoAuthorsChart" height="150"></canvas>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card shadow-sm border-0 p-4">
+                <h6 class="text-muted mb-3 text-center">Papers by Area</h6>
+                <canvas id="papersByAreaChart" height="300"></canvas>
+            </div>
+        </div>
+
+    </div>
+`;
+
+
+                document.getElementById("dashboard-cards").innerHTML = html;
+
+                // Criar gráfico com Chart.js para papers by area
+                const ctx = document.getElementById('papersByAreaChart').getContext('2d');
+                const labels = data.papers_by_area.map(a => a.area);
+                const values = data.papers_by_area.map(a => a.total);
+
+                if (window.papersByAreaChart instanceof Chart) {
+                    window.papersByAreaChart.destroy();
+                }
+
+                window.papersByAreaChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'Number of Papers',
+                            data: values,
+                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            // Top Paper Authors Chart
+const topAuthorsCtx = document.getElementById('topPaperAuthorsChart').getContext('2d');
+const topAuthorLabels = data.top_paper_authors.map(a => a.author);
+const topAuthorCounts = data.top_paper_authors.map(a => a.total);
+
+window.topPaperAuthorsChart = new Chart(topAuthorsCtx, {
+    type: 'bar',
+    data: {
+        labels: topAuthorLabels,
+        datasets: [{
+            label: 'Papers',
+            data: topAuthorCounts,
+            backgroundColor: 'rgba(75, 192, 192, 0.7)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+            title: {
+                display: false
+            }
+        },
+        scales: {
+            x: {
+                beginAtZero: true,
+                ticks: { precision: 0 }
+            }
+        }
+    }
+});
+
+// Top Repo Authors Chart
+const topReposCtx = document.getElementById('topRepoAuthorsChart').getContext('2d');
+const topRepoLabels = data.top_repo_authors.map(a => a.author);
+const topRepoCounts = data.top_repo_authors.map(a => a.total);
+
+window.topRepoAuthorsChart = new Chart(topReposCtx, {
+    type: 'bar',
+    data: {
+        labels: topRepoLabels,
+        datasets: [{
+            label: 'Repositories',
+            data: topRepoCounts,
+            backgroundColor: 'rgba(255, 159, 64, 0.7)',
+            borderColor: 'rgba(255, 159, 64, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+            title: {
+                display: false
+            }
+        },
+        scales: {
+            x: {
+                beginAtZero: true,
+                ticks: { precision: 0 }
+            }
+        }
+    }
+});
+
+            } catch (error) {
+                console.error("Erro ao carregar dashboard:", error);
+                document.getElementById("dashboard-cards").innerHTML = `<div class="text-danger">Falha ao carregar dados do dashboard.</div>`;
+            }
+        }
+
+        async function loadPapers() {
+            const term = document.getElementById('paperTerm').value.trim();
+
+            if (term) {
+                // Busca semântica
+                try {
+                    const res = await fetch(`${API}/semantic-search`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ query: term }),
+                    });
+                    if (!res.ok) throw new Error("Erro na busca semântica");
+                    const results = await res.json();
+
+                    const html = results.map(p => `
+        <tr>
+          <td>${p.paper_name}</td>
+          <td>${p.authors}</td>
+          <td>${p.publication_date}</td>
+          <td>
+  <div class="d-flex gap-2">
+    <a href="${p.url}" target="_blank" class="btn btn-sm btn-outline-primary">Check Paper</a>
+    <a href="#" class="btn btn-sm btn-secondary" onclick="showPaperDetails(${p.id}); return false;">See Details</a>
+  </div>
+</td>
+        </tr>`).join("");
+                    document.getElementById("papers-table").innerHTML = html;
+
+                } catch (error) {
+                    alert("Erro ao realizar busca semântica.");
+                    console.error(error);
+                }
+            } else {
+                // Busca tradicional, montar só params com valores não vazios
+                const paramsObj = {
+                    title: document.getElementById("paperTitle").value.trim(),
+                    // publication_date: document.getElementById("paperDate").value.trim(),
+                    author: document.getElementById("paperAuthor").value.trim(),
+                };
+
+                // Filtrar só os que têm valor para enviar na query
+                const filteredParams = Object.entries(paramsObj)
+                    .filter(([_, value]) => value !== "")
+                    .reduce((acc, [key, value]) => {
+                        acc[key] = value;
+                        return acc;
+                    }, {});
+
+                const params = new URLSearchParams(filteredParams);
+
+                try {
+                    const res = await fetch(`${API}/papers?${params.toString()}`);
+                    if (!res.ok) throw new Error("Erro ao carregar papers");
+                    const data = await res.json();
+
+                    const html = data.map(p => `
+        <tr>
+          <td>${p.paper_name}</td>
+          <td>${p.authors}</td>
+          <td>${p.publication_date}</td>
+          <td>
+            <a href="${p.url}" target="_blank" class="btn btn-sm btn-outline-primary ms-2">Check Paper</a>
+            <a href="#" class="btn btn-sm btn-secondary" onclick="showPaperDetails(${p.id}); return false;">See Details</a>
+          </td>
+        </tr>`).join("");
+                    document.getElementById("papers-table").innerHTML = html;
+
+                } catch (error) {
+                    alert("Erro ao carregar papers.");
+                    console.error(error);
+                }
+            }
+        }
+
+
+        async function showPaperDetails(id) {
+            try {
+                const res = await fetch(`${API}/papers/${id}`);
+                if (!res.ok) throw new Error('Erro ao carregar detalhes');
+                const paper = await res.json();
+
+                // Usar markdown simples - para converter, vou sugerir usar uma lib simples no futuro.
+                // Por ora, vamos mostrar os campos de forma estilizada em HTML.
+                const html = `
+            <h4>${paper.paper_name}</h4>
+            <p><strong>Authors:</strong> ${paper.authors}</p>
+            <p><strong>Publication Date:</strong> ${paper.publication_date}</p>
+            <p><strong>Abstract:</strong></p>
+            <p>${paper.abstract}</p>
+            `;
+
+                document.getElementById('paper-detail-content').innerHTML = html;
+                const link = document.getElementById('paper-detail-link');
+                link.href = paper.url;
+
+                // Mostrar a modal
+                const modal = new bootstrap.Modal(document.getElementById('paperDetailModal'));
+                modal.show();
+
+            } catch (error) {
+                alert('Falha ao carregar detalhes do paper.');
+                console.error(error);
+            }
+        }
+
+        async function loadRepos() {
+            const semanticQuery = document.getElementById("repoSemanticQuery").value.trim();
+
+            if (semanticQuery) {
+                // Busca semântica
+                try {
+                    const res = await fetch(`${API}/semantic-search-repo`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ query: semanticQuery }),
+                    });
+                    if (!res.ok) throw new Error("Erro na busca semântica");
+                    const results = await res.json();
+
+                    const html = results.map(r => `
+                        <tr>
+                            <td>${r.repo_name}</td>
+                            <td>${r.author}</td>
+                            <td>
+                                <a href="${r.repo_url}" target="_blank" class="btn btn-sm btn-outline-primary">Check Repo</a>
+                                <a href="#" class="btn btn-sm btn-secondary ms-2" onclick="showRepoDetails(${r.id}); return false;">See Details</a>
+                            </td>
+                        </tr>
+                    `).join("");
+
+                    document.getElementById("repos-table").innerHTML = html;
+
+                    // opcional: cachear resultados detalhados
+                    cachedRepos = results.reduce((acc, r) => {
+                        acc[r.id] = r;
+                        return acc;
+                    }, {});
+
+                } catch (err) {
+                    alert("Erro ao realizar busca semântica.");
+                    console.error(err);
+                }
+            } else {
+                // Busca tradicional
+                const params = new URLSearchParams({
+                    author: document.getElementById("repoAuthor").value.trim(),
+                    name: document.getElementById("repoName").value.trim(),
+                });
+
+                try {
+                    const res = await fetch(`${API}/repos?${params.toString()}`);
+                    if (!res.ok) throw new Error("Erro ao carregar repositórios");
+                    const data = await res.json();
+
+                    const html = data.map(r => `
+                        <tr>
+                            <td>${r.repo_name}</td>
+                            <td>${r.author}</td>
+                            <td>
+                                <a href="${r.repo_url}" target="_blank" class="btn btn-sm btn-outline-primary">Check Repo</a>
+                                <a href="#" class="btn btn-sm btn-secondary ms-2" onclick="showRepoDetails(${r.id}); return false;">See Details</a>
+                            </td>
+                        </tr>
+                    `).join("");
+
+                    document.getElementById("repos-table").innerHTML = html;
+
+                } catch (err) {
+                    alert("Erro ao carregar repositórios.");
+                    console.error(err);
+                }
+            }
+        }
+ 
+        async function showRepoDetails(id) {
+            try {
+                const res = await fetch(`${API}/repos/${id}`);
+                if (!res.ok) throw new Error('Erro ao carregar detalhes');
+                const repo = await res.json();
+
+                const html = `
+                    <h4>${repo.repo_name}</h4>
+                    <p><strong>Author:</strong> ${repo.author}</p>
+                    <p><strong>Area:</strong> ${repo.area}</p>
+                    <p><strong>Subarea:</strong> ${repo.subarea}</p>
+                    ${repo.readme ? `<hr><h5>README</h5><div>${marked.parse(repo.readme)}</div>` : "<p><em>No README available.</em></p>"}
+                `;
+
+                document.getElementById("repo-detail-content").innerHTML = html;
+                const link = document.getElementById("repo-detail-link");
+                link.href = repo.repo_url;
+
+                const modal = new bootstrap.Modal(document.getElementById("repoDetailModal"));
+                modal.show();
+            } catch (error) {
+                alert("Erro ao carregar detalhes do repositório.");
+                console.error(error);
+            }
+        }
+
+        async function semanticSearch() {
+            const query = document.getElementById("semanticQuery").value;
+            const res = await fetch(`${API}/semantic-search`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ query }),
+            });
+            const results = await res.json();
+            const html = results.map(r => `
+        <div class="card p-3 mb-2">
+          <h5>${r.name}</h5>
+          <p><b>Score:</b> ${r.score.toFixed(4)}</p>
+          <p>${r.abstract}</p>
+        </div>`).join("");
+            document.getElementById("semantic-results").innerHTML = html;
+        }
+
+    async function semanticSearchRepos() {
+        const query = document.getElementById("repoSemanticQuery").value.trim();
+        if (!query) return;
+
+        const res = await fetch(`${API}/semantic-search-repo`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query }),
+        });
+
+        const results = await res.json();
+
+        const html = results.map(r => `
+            <tr>
+            <td>${r.repo_name}</td>
+            <td>${r.author}</td>
+            <td>
+                <a href="${r.repo_url}" target="_blank" class="btn btn-sm btn-outline-primary">Check Repo</a>
+                <a href="#" class="btn btn-sm btn-secondary ms-2" onclick="showRepoDetails(${r.id}); return false;">See Details</a>
+            </td>
+            </tr>
+        `).join("");
+
+        document.getElementById("repos-table").innerHTML = html;
+
+        // opcional: preencher cache de dados detalhados
+        cachedRepos = results.reduce((acc, r) => {
+            acc[r.id] = r;
+            return acc;
+        }, {});
+        }
+
+    
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+
+</html>
